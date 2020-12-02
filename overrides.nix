@@ -11,6 +11,26 @@ in
 # we can also make other arbitrary changes as needed.
 packages.overrideScope' (self: super: {
   rakuPackages = super.rakuPackages // {
-    # Package overrides go here
+    Readline = super.rakuPackages.Readline.overrideAttrs (old: {
+      # The current ecosystem package is an older version, update to the latest first.
+      src = pkgs.fetchFromGitHub {
+        owner = "fooist";
+        repo = "perl6-readline";
+        rev = "0.1.6";
+        sha256 = "00rdm4g0k15bjxx6iqa691xcypmcrmxsv6fz25hkm3322djcpwsz";
+      };
+      # Declare our readline dependency
+      nativeBuildInputs = old.nativeBuildInputs or [] ++ [ pkgs.readline ];
+      # it hardcodes a few locations to search for libreadline.
+      # make it look in our location instead. We have to do this twice,
+      # once for the generic paths, and again for macos as it overrides its
+      # own paths to hardcode homebrew.
+      patchPhase = ''
+        substituteInPlace lib/Readline.pm \
+          --replace "my constant LIBRARY-PATHS = (" \
+                    "my constant LIBRARY-PATHS = ( '${pkgs.readline}/lib' ) #\`(" \
+          --replace /usr/local/opt/readline/lib ${pkgs.readline}/lib
+      '';
+    });
   };
 })
