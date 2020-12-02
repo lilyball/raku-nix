@@ -18,6 +18,8 @@ using information collected by [CRAI].
 
 [CRAI]: https://crai.foldr.nl
 
+**Note:** CRAI appears to be gone, so autocreation isn't happening anymore.
+
 Usage
 -----
 
