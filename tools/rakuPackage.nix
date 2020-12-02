@@ -1,18 +1,21 @@
 { lib, stdenv, makeWrapper, rakudo }:
 { name, src
-, buildInputs ? [], buildDepends ? [], depends ? []
-, preInstallPhase ? "true", postInstallPhase ? "true" }:
-stdenv.mkDerivation {
+, nativeBuildInputs ? [], buildInputs ? []
+, buildDepends ? [], depends ? []
+, configurePhase ? null
+, dontConfigure ? isNull configurePhase
+, ... } @ args:
+stdenv.mkDerivation (args // {
     inherit name src;
 
-    buildInputs = [makeWrapper rakudo] ++ buildInputs;
+    nativeBuildInputs = [ makeWrapper ] ++ nativeBuildInputs;
+    buildInputs = [ rakudo ] ++ buildInputs;
 
-    phases = ["unpackPhase" "preInstallPhase"
-              "installPhase" "postInstallPhase"
-              "fixupPhase"];
-    inherit preInstallPhase postInstallPhase;
+    inherit dontConfigure;
 
     installPhase = ''
+        runHook preInstall
+
         mkdir --parents $out
 
         # Many packages really want there to be a home directory.
@@ -23,7 +26,7 @@ stdenv.mkDerivation {
         # This can execute some code to set up stuff before installing.
         if [[ -e Build.pm ]]; then
             preBuildPERL6LIB=
-            for depend in ${lib.concatMapStringsSep " " (p: "${p}") buildDepends}; do
+            for depend in $buildDepends; do
                 preBuildPERL6LIB=$preBuildPERL6LIB,$(< $depend/PERL6LIB)
             done
             PERL6LIB=$preBuildPERL6LIB \
@@ -36,7 +39,7 @@ stdenv.mkDerivation {
         # appear first, otherwise installation will fail.
         {
             echo -n inst\#$out
-            for depend in ${lib.concatMapStringsSep " " (p: "${p}") depends}; do
+            for depend in $depends; do
                 echo -n ,
                 cat $depend/PERL6LIB
             done
@@ -64,5 +67,7 @@ stdenv.mkDerivation {
                 --add-flags --profile \
                 --add-flags "$hidden"
         done
+
+        runHook postInstall
     '';
-}
+})
