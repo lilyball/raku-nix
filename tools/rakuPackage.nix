@@ -13,14 +13,14 @@ stdenv.mkDerivation (args // {
 
     inherit dontConfigure;
 
-    installPhase = ''
-        runHook preInstall
+    buildPhase = ''
+        runHook preBuild
 
         mkdir --parents $out
 
         # Many packages really want there to be a home directory.
-        mkdir homeless-shelter
-        export HOME=$PWD/homeless-shelter
+        mkdir $NIX_BUILD_TOP/homeless-shelter
+        export HOME=$NIX_BUILD_TOP/homeless-shelter
 
         # Execute Build.pm, typically used with LibraryMake.
         # This can execute some code to set up stuff before installing.
@@ -32,6 +32,12 @@ stdenv.mkDerivation (args // {
             PERL6LIB=$preBuildPERL6LIB \
                 raku -e 'EVALFILE ‘Build.pm’; ::(‘Build’).build($*CWD)'
         fi
+
+        runHook postBuild
+    '';
+
+    installPhase = ''
+        runHook preInstall
 
         # Construct the PERL6LIB environment variable and store it in a file.
         # It contains the repo specs for all transitive dependencies.
