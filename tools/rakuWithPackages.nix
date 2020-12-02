@@ -1,7 +1,7 @@
 { lib, makeWrapper, rakudo, rakuPackages, stdenvNoCC }: 
 getPs:
 stdenvNoCC.mkDerivation {
-    name = "rakuWithPackages";
+    name = "${rakudo.name}-env";
     buildInputs = [ makeWrapper ];
     inherit rakudo;
     phases = [ "installPhase" ];
