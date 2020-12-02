@@ -1,5 +1,5 @@
+{ pkgs ? import ../nix/pkgs.nix {} }:
 let
-    pkgs = import ../nix/pkgs.nix {};
     raku-nix = import ../. {inherit pkgs;};
 
     # The example uses DBIish w/ SQLite.
@@ -17,7 +17,7 @@ in
     raku-nix.rakuPackage {
         name = "Raku-Nix-Example";
         src = pkgs.lib.cleanSource ./.;
-        depends = [raku-nix.DBIish raku-nix.Inline-Perl5];
+        depends = with raku-nix.rakuPackages; [ DBIish Inline-Perl5 ];
         preInstallPhase = ''
             export PERL5LIB=${pkgs.perlPackages.makePerlPath perl5Depends}
         '';
