@@ -59,10 +59,12 @@ stdenv.mkDerivation (args // {
             mv "$bin" "$hidden"
 
             makeWrapper ${rakudo}/bin/raku "$bin" \
+                --argv0 '$0' \
                 --set PERL6LIB $(< $out/PERL6LIB) \
                 --add-flags "$hidden"
 
             makeWrapper ${rakudo}/bin/raku "$bin.profile" \
+                --argv0 '$0' \
                 --set PERL6LIB $(< $out/PERL6LIB) \
                 --add-flags --profile \
                 --add-flags "$hidden"
